@@ -1,16 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
 
-import { getMe, deleteBook } from '../utils/API';
+import { useQuery } from '@apollo/client';
+import { QUERY_ME } from '../utils/queries';
+
+import { useMutation } from '@apollo/client';
+import { DELETE_BOOK } from '../utils/mutations';
+
+//import { getMe, deleteBook } from '../utils/API';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 
-const SavedBooks = () => {
-  const [userData, setUserData] = useState({});
+  const SavedBooks = () => {
+    let [userData, setUserData] = useState({});
 
   // use this to determine if `useEffect()` hook needs to run again
-  const userDataLength = Object.keys(userData).length;
+  let userDataLength = Object.keys(userData).length;
 
+  // Invoke `useMutation()` hook to return a Promise-based function and data about the DELETE_BOOK mutation
+  const [deleteBook, { error }] = useMutation(DELETE_BOOK);  
+
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Comment out the useEffect hook.
+  ///////////////////////////////////////////////////////////////////////////////////
+  /**********************************************************************************
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -25,7 +38,7 @@ const SavedBooks = () => {
         if (!response.ok) {
           throw new Error('something went wrong!');
         }
-
+ 
         const user = await response.json();
         setUserData(user);
       } catch (err) {
@@ -35,6 +48,11 @@ const SavedBooks = () => {
 
     getUserData();
   }, [userDataLength]);
+  *********************************************************************************************************/
+
+  const { loading, data } = useQuery(QUERY_ME);
+  userData = data?.user || {};
+  userDataLength = Object.keys(userData).length;
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
@@ -44,18 +62,34 @@ const SavedBooks = () => {
       return false;
     }
 
-    try {
-      const response = await deleteBook(bookId, token);
+    try 
+    {
+      ///////////////////////////////////////////////////////////////////////////////////////////////
+      // Execute the deleteBook mutation instead of the deleteBook function imported from the API file.
+      ///////////////////////////////////////////////////////////////////////////////////////////////
+      const { updatedUser } = await deleteBook({
+        variables: { bookId },
+      });
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
+      ////////////////////////////////////////////////////////////
+      // Commented out the deleteBook API call.
+      // Replace with deleteBook useMutation hook.
+      //const response = await deleteBook(bookId, token);
 
-      const updatedUser = await response.json();
+      //if (!response.ok) {
+      //  throw new Error('something went wrong!');
+      // }
+      ///////////////////////////////////////////////////////////////
+
+      //const updatedUser = await response.json();
+      
       setUserData(updatedUser);
+
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
-    } catch (err) {
+    } 
+    catch (err) 
+    {
       console.error(err);
     }
   };

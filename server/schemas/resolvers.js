@@ -9,11 +9,11 @@ const { signToken } = require('../utils/auth');
 const resolvers = {
   Query: {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // getMe: The context.user._id value is used to find the user.
+    // me: The context.user._id value is used to find the user.
     // If not found an AuthenticationError is thrown.
     // By adding context to our query, we can retrieve the logged in user without specifically searching for them.
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    getMe: async (parent, args, context) => {
+    me: async (parent, args, context) => {
       if (context.user) {
         return User.findOne({ _id: context.user._id });
       }
@@ -27,6 +27,7 @@ const resolvers = {
   // create a user, sign a token, and send it back (to client/src/components/SignUpForm.js)
   ////////////////////////////////////////////////////////////////////////////////////////////
     createUser: async (parent, { username, email, password }) => {
+      console.log("username = " + username + " email = " + email + " password = " + password);
       const user = await User.create({ username, email, password });
       const token = signToken(user);
       return { token, user };
@@ -51,6 +52,7 @@ const resolvers = {
       }
 
       const token = signToken(user);
+
       return { token, user };
     },
     

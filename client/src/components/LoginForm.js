@@ -2,13 +2,19 @@
 import React, { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 
-import { loginUser } from '../utils/API';
+//import { loginUser } from '../utils/API';
 import Auth from '../utils/auth';
+
+import { useMutation } from '@apollo/client';
+import { LOGIN_USER } from '../utils/mutations';
 
 const LoginForm = () => {
   const [userFormData, setUserFormData] = useState({ email: '', password: '' });
   const [validated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+
+  // Invoke `useMutation()` hook to return a Promise-based function and data about the LOGIN_USER mutation.
+  const [login, { error, data }] = useMutation(LOGIN_USER);  
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -25,16 +31,28 @@ const LoginForm = () => {
       event.stopPropagation();
     }
 
-    try {
-      const response = await loginUser(userFormData);
+    try 
+    {
+      /////////////////////////////////////////////////////////////////////////////////////
+      // Comment out the API call to loginUser with LOGIN_USER mutation functionality.
+      //const response = await loginUser(userFormData);
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
+      //if (!response.ok) {
+      //  throw new Error('something went wrong!');
+      //}
 
-      const { token, user } = await response.json();
-      console.log(user);
-      Auth.login(token);
+      //const { token, user } = await response.json();
+      ////////////////////////////////////////////////////////////////////////////////////////
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////
+      // Execute the login mutation instead of the loginUser function imported from the API file.
+      ////////////////////////////////////////////////////////////////////////////////////////////////////
+      const { data } = await login({
+        variables: { ...userFormData },
+      });
+
+      console.log(data.login.user);
+      Auth.login(data.login.token);
     } catch (err) {
       console.error(err);
       setShowAlert(true);
