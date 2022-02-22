@@ -59,7 +59,7 @@ const SavedBooks = () => {
     variables: {userId}
   });
 
-  alert("singleUser data = " + data?.singleUser.saveBooks);
+  //alert("singleUser data = " + data?.singleUser.saveBooks);
 
   userData = data?.singleUser.saveBooks || {};
   userDataLength = Object.keys(userData).length;
