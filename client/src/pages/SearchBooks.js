@@ -28,7 +28,7 @@ const SearchBooks = () => {
   });
 
   // Invoke `useMutation()` hook to return a Promise-based function and data about the SAVE_BOOK mutation
-  const [saveBook, { error }] = useMutation(SAVE_BOOK);  
+  const [saveBook, { error, data }] = useMutation(SAVE_BOOK);  
 
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event) => {
@@ -80,7 +80,7 @@ const SearchBooks = () => {
       // Execute the saveBook mutation instead of the saveBook function imported from the API file.
       ///////////////////////////////////////////////////////////////////////////////////////////////
       const { data } = await saveBook({
-        variables: { bookToSave },
+        variables: { ...bookToSave },
       });
 
       //////////////////////////////////////////////////////////////////

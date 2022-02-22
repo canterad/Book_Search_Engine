@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
 
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
-import { QUERY_ME } from '../utils/queries';
+import { QUERY_SINGLE_USER } from '../utils/queries';
 
 import { useMutation } from '@apollo/client';
 import { DELETE_BOOK } from '../utils/mutations';
 
-//import { getMe, deleteBook } from '../utils/API';
+import { getMe, deleteBook } from '../utils/API';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 
-  const SavedBooks = () => {
-    let [userData, setUserData] = useState({});
+const SavedBooks = () => {
+
+  let [userData, setUserData] = useState({});
 
   // use this to determine if `useEffect()` hook needs to run again
   let userDataLength = Object.keys(userData).length;
@@ -23,7 +25,7 @@ import { removeBookId } from '../utils/localStorage';
   ///////////////////////////////////////////////////////////////////////////////////
   // Comment out the useEffect hook.
   ///////////////////////////////////////////////////////////////////////////////////
-  /**********************************************************************************
+  /***************************************************************************************
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -40,18 +42,26 @@ import { removeBookId } from '../utils/localStorage';
         }
  
         const user = await response.json();
-        setUserData(user);
+        //setUserData(user);
       } catch (err) {
         console.error(err);
       }
     };
 
-    getUserData();
+    //getUserData();
   }, [userDataLength]);
-  *********************************************************************************************************/
+  *********************************************************************************************/
+ 
+  // If there is no `userId` in the URL as a parameter, execute the `QUERY_ME` query instead for the logged 
+  // in user's information
+  const userId = 1;
+    const {loading, data} = useQuery(QUERY_SINGLE_USER, {
+    variables: {userId}
+  });
 
-  const { loading, data } = useQuery(QUERY_ME);
-  userData = data?.user || {};
+  alert("singleUser data = " + data?.singleUser.saveBooks);
+
+  userData = data?.singleUser.saveBooks || {};
   userDataLength = Object.keys(userData).length;
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database

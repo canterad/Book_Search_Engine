@@ -14,11 +14,27 @@ const resolvers = {
     // By adding context to our query, we can retrieve the logged in user without specifically searching for them.
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     me: async (parent, args, context) => {
+
+      console.log("Got to me resolver routine.");
+
       if (context.user) {
         return User.findOne({ _id: context.user._id });
       }
       throw new AuthenticationError('You need to be logged in!');
     },
+
+    singleUser: async (parent, { userId }, context) => {
+      console.log("Got to singleUser resolver routine.");
+
+      console.log("context.user._id = " + context.user._id);
+      
+      if (context.user) {
+        const userData = await User.findOne({ _id: context.user._id });
+        console.log("Data Returned from FindOne call = " + userData);
+        return userData;
+      }
+      throw new AuthenticationError('You need to be logged in!');
+    },      
   },
  
   Mutation: {
@@ -27,7 +43,6 @@ const resolvers = {
   // create a user, sign a token, and send it back (to client/src/components/SignUpForm.js)
   ////////////////////////////////////////////////////////////////////////////////////////////
     createUser: async (parent, { username, email, password }) => {
-      console.log("username = " + username + " email = " + email + " password = " + password);
       const user = await User.create({ username, email, password });
       const token = signToken(user);
       return { token, user };
@@ -61,7 +76,18 @@ const resolvers = {
     // Save a book to a user's savedBooks field by adding it to the set (to prevent duplicates)
     // user comes from context.user._id value created in the auth middleware function
     ///////////////////////////////////////////////////////////////////////////////////////////////    
-    saveBook: async (parent, { book }, context) => {
+    saveBook: async (parent, { bookId, title }, context ) => {
+      
+      console.log("Got to saveBook Resolver.");
+      
+      // Create a book object and set the variables passed in.      
+      const book = {
+        bookId: bookId,
+        title: title
+      };
+
+      console.log("User context = " + context.user);
+
       // If context has a `user` property, that means the user executing this mutation has a valid JWT and is logged in
       if (context.user) {
         return User.findOneAndUpdate(

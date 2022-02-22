@@ -53,6 +53,11 @@ const LoginForm = () => {
 
       console.log(data.login.user);
       Auth.login(data.login.token);
+
+      //localStorage.setItem("lastname", "Smith");
+      //localStorage.getItem("lastname");
+
+
     } catch (err) {
       console.error(err);
       setShowAlert(true);
