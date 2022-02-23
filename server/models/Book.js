@@ -10,7 +10,7 @@ const bookSchema = new Schema({
   description: {
     type: String,
     required: true,
-    default: "description",
+    default: "No Description Found",
   },
   // saved book id from GoogleBooks
   bookId: {
@@ -26,7 +26,7 @@ const bookSchema = new Schema({
   title: {
     type: String,
     required: true,
-    default: "title",
+    default: "No Title Found",
   },
 });
 

@@ -1,21 +1,19 @@
 import React, { useState, useEffect} from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
 
-import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { QUERY_SINGLE_USER } from '../utils/queries';
 
 import { useMutation } from '@apollo/client';
 import { DELETE_BOOK } from '../utils/mutations';
 
-import { getMe, deleteBook } from '../utils/API';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 
 const SavedBooks = () => {
 
   let [userData, setUserData] = useState({});
-
+ 
   // use this to determine if `useEffect()` hook needs to run again
   let userDataLength = Object.keys(userData).length;
 
@@ -52,19 +50,37 @@ const SavedBooks = () => {
   }, [userDataLength]);
   *********************************************************************************************/
  
-  // If there is no `userId` in the URL as a parameter, execute the `QUERY_ME` query instead for the logged 
-  // in user's information
+  ////////////////////////////////////////////////////////////////////////////////////////
+  // I am using a fake userId to get this query to work. 
+  // In the resolver code on the server it will use the context to get the user id value.
+  /////////////////////////////////////////////////////////////////////////////////////////
   const userId = 1;
-    const {loading, data} = useQuery(QUERY_SINGLE_USER, {
-    variables: {userId}
-  });
 
-  //alert("singleUser data = " + data?.singleUser.saveBooks);
+    let {loading, data} = useQuery(QUERY_SINGLE_USER, {
+      fetchPolicy: "network-only",      
+      variables: { userId: userId },
+    });
 
-  userData = data?.singleUser.saveBooks || {};
-  userDataLength = Object.keys(userData).length;
+  if (data != undefined)  
+  {
+    userData = data?.singleUser || {}; 
+    userData.savedBooks = data.singleUser.savedBooks;
+    userDataLength = data.singleUser.savedBooks.length;
+  }
 
+  // Testing this value to set the correct loading value.
+  if (userDataLength > 0)
+  {
+    loading = false;
+  }
+  else
+  {
+    loading = true;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const handleDeleteBook = async (bookId) => {
     const token = Auth.loggedIn() ? Auth.getToken() : null;
 
@@ -77,9 +93,16 @@ const SavedBooks = () => {
       ///////////////////////////////////////////////////////////////////////////////////////////////
       // Execute the deleteBook mutation instead of the deleteBook function imported from the API file.
       ///////////////////////////////////////////////////////////////////////////////////////////////
-      const { updatedUser } = await deleteBook({
-        variables: { bookId },
+      //const { updatedUser } = await deleteBook({
+      //  variables: { bookId: bookId },
+      //});
+
+
+      const { data } = await deleteBook({
+        variables: { bookId: bookId },
       });
+
+      console.log("data = " + data);
 
       ////////////////////////////////////////////////////////////
       // Commented out the deleteBook API call.
@@ -93,7 +116,15 @@ const SavedBooks = () => {
 
       //const updatedUser = await response.json();
       
-      setUserData(updatedUser);
+      //setUserData(updatedUser);
+      //userData = data;
+
+      if (data != undefined)  
+      {
+        userData = data?.deleteBook || {}; 
+        userData.savedBooks = data.deleteBook.savedBooks;
+        userDataLength = data.deleteBook.savedBooks.length;
+      }
 
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
@@ -113,7 +144,7 @@ const SavedBooks = () => {
     <>
       <Jumbotron fluid className='text-light bg-dark'>
         <Container>
-          <h1>Viewing saved books!</h1>
+          <h1>Viewing {userData.username}'s books!</h1>
         </Container>
       </Jumbotron>
       <Container>
@@ -142,6 +173,6 @@ const SavedBooks = () => {
       </Container>
     </>
   );
-};
+};        
 
 export default SavedBooks;

@@ -57,10 +57,6 @@ const [createUser, { error, data }] = useMutation(CREATE_USER);
 
       console.log(data.createUser.user);
       Auth.login(data.createUser.token);
-
-    //localStorage.setItem("lastname", "Smith");
-    //localStorage.getItem("lastname");
-
     } 
     catch (err) 
     {

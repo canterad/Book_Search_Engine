@@ -15,8 +15,6 @@ const resolvers = {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     me: async (parent, args, context) => {
 
-      console.log("Got to me resolver routine.");
-
       if (context.user) {
         return User.findOne({ _id: context.user._id });
       }
@@ -24,13 +22,9 @@ const resolvers = {
     },
 
     singleUser: async (parent, { userId }, context) => {
-      console.log("Got to singleUser resolver routine.");
 
-      console.log("context.user._id = " + context.user._id);
-      
       if (context.user) {
         const userData = await User.findOne({ _id: context.user._id });
-        console.log("Data Returned from FindOne call = " + userData);
         return userData;
       }
       throw new AuthenticationError('You need to be logged in!');
@@ -76,21 +70,20 @@ const resolvers = {
     // Save a book to a user's savedBooks field by adding it to the set (to prevent duplicates)
     // user comes from context.user._id value created in the auth middleware function
     ///////////////////////////////////////////////////////////////////////////////////////////////    
-    saveBook: async (parent, { bookId, title }, context ) => {
+    saveBook: async (parent, { bookId, title, authors, description, image }, context ) => {
       
-      console.log("Got to saveBook Resolver.");
-      
-      // Create a book object and set the variables passed in.      
+      // Create a book object and set the variables passed in.
       const book = {
         bookId: bookId,
-        title: title
+        title: title,
+        authors: authors,
+        description: description,
+        image: image
       };
-
-      console.log("User context = " + context.user);
 
       // If context has a `user` property, that means the user executing this mutation has a valid JWT and is logged in
       if (context.user) {
-        return User.findOneAndUpdate(
+        return await User.findOneAndUpdate(
           { _id: context.user._id },
           {
             $addToSet: { savedBooks: book },
@@ -109,11 +102,17 @@ const resolvers = {
     // deleteBook:
     // For the user - remove a book from savedBooks based on the bookID value pass in.
     ////////////////////////////////////////////////////////////////////////////////////
-    deleteBook: async (parent, { bookID }, context) => {
+    deleteBook: async (parent, { bookId }, context) => {
+
+      // Create a book object and set the variables passed in.      
+      const book = {
+        bookId: bookId
+      };
+
       if (context.user) {
-        return User.findOneAndUpdate(
+        return await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $pull: { savedBooks: bookID } },
+          { $pull: { savedBooks: book } },
           { new: true }
         );
       }
